@@ -47,6 +47,6 @@ export const config = {
   smtpPass: env("SMTP_PASS", ""),
   smtpFrom: env("SMTP_FROM", "MCC Codebreaker <noreply@localhost>"),
   testDayOverride: env("TEST_DAY_OVERRIDE", ""),
-  dbPath: path.join(ROOT, "data", "codebreaker.sqlite"),
+  dbPath: path.join("/tmp", "codebreaker.sqlite"),
   cookieSecure: env("NODE_ENV", "development") === "production",
 };
