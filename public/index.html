@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft Campus Club — Technical Game Hub</title>
+  <meta name="description" content="Enter the arena. Four technical logic games. One central hub. Microsoft Campus Club's Technical Game Hub.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/hub.css">
+</head>
+<body>
+<div class="space-bg" aria-hidden="true">
+  <div class="nebula nebula--blue"></div>
+  <div class="nebula nebula--pink"></div>
+  <div class="nebula nebula--core"></div>
+  <div class="network-layer">
+    <canvas id="networkCanvas"></canvas>
+    <div class="network-glow"></div>
+    <div class="network-scanline"></div>
+  </div>
+  <svg class="circuit-lines" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 120 H180 L220 160 H420" stroke="#5b6ad6" stroke-width="1" fill="none"></path>
+    <path d="M1440 700 H1260 L1220 660 H1040" stroke="#c15be0" stroke-width="1" fill="none"></path>
+    <path d="M0 780 H140 L170 750 H320 L350 780 H520" stroke="#5b6ad6" stroke-width="1" fill="none"></path>
+    <path d="M1440 200 H1300 L1270 230 H1120" stroke="#c15be0" stroke-width="1" fill="none"></path>
+    <circle cx="420" cy="160" r="3" fill="#5b6ad6"></circle>
+    <circle cx="1040" cy="660" r="3" fill="#c15be0"></circle>
+    <circle cx="520" cy="780" r="3" fill="#5b6ad6"></circle>
+    <circle cx="1120" cy="230" r="3" fill="#c15be0"></circle>
+  </svg>
+</div>
+
+<div class="page">
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" data-link>
+        <img class="brand-logo" src="/assets/mcc-logo.png" alt="Microsoft Campus Club logo">
+        <div class="brand-copy">
+          <span class="brand-name">MICROSOFT CAMPUS CLUB</span>
+          <span class="brand-sub" id="brandSub">TECHNICAL GAME HUB</span>
+        </div>
+      </a>
+      <div class="header-right">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/" data-link data-nav="home">Home</a>
+          <a href="/codebreaker" data-link data-nav="codebreaker">Codebreaker</a>
+          <a href="/leaderboard" data-link data-nav="leaderboard">Leaderboard</a>
+          <a href="/admin" data-link data-nav="admin" class="admin-link">Control Center</a>
+        </nav>
+        <a class="btn-join" id="joinClubBtn" href="https://microsoft-campus-club-webpage.vercel.app/">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M17 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 5 18.5V20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            <circle cx="9.5" cy="7.5" r="3" stroke="currentColor" stroke-width="1.6"></circle>
+            <path d="M16 8a3 3 0 1 0 0-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            <path d="M18 14.2c1.7.4 3 1.8 3 3.8V20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          </svg>
+          <span class="btn-join-text">Join the Club</span>
+          <svg class="arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-home" class="view is-active">
+      <section class="hero">
+        <div class="hud hud--left" aria-hidden="true">
+          <div class="hud-panel">
+            <div class="l1">READY</div>
+            <div class="l2">PLAYER</div>
+            <div class="hud-bars"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="hud hud--right" aria-hidden="true">
+          <div class="hud-status"><span class="led"></span> SYSTEM ONLINE</div>
+          <div class="hud-radar"></div>
+        </div>
+        <canvas class="particle-field" id="particleField" aria-hidden="true"></canvas>
+        <div class="hero-core" id="heroCore" aria-hidden="true">
+          <span class="core-ring"></span>
+          <span class="core-ring ring-2"></span>
+          <span class="core-ring ring-3"></span>
+          <span class="core-crosshair"></span>
+          <span class="core-crosshair x"></span>
+        </div>
+        <div class="hero-inner">
+          <p class="hero-eyebrow"><span class="dot"></span> MISSION CONTROL / GAME ARENA</p>
+          <h1>THINK. SOLVE.<br><span class="accent">CONQUER.</span></h1>
+          <p class="hero-subtitle">4 Games. 1 Arena. Endless Challenges.</p>
+          <div class="hero-cta">
+            <a class="btn-choose" href="#games">
+              Choose Your Game
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="games" id="games">
+        <div class="wrap">
+          <p class="section-label">Select a Challenge</p>
+          <div class="game-grid">
+            <button class="game-card game-card--gridlock" type="button" aria-label="Play The Gridlock — Traffic Clearing Puzzle">
+              <span class="card-corner tl"></span><span class="card-corner br"></span>
+              <span class="card-top"><span class="card-index">01</span><span class="card-status">Ready</span></span>
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <rect x="4" y="4" width="40" height="40" rx="2" stroke="currentColor" stroke-width="1.6"></rect>
+                  <line x1="4" y1="17" x2="44" y2="17" stroke="currentColor" stroke-width="1.2" opacity="0.5"></line>
+                  <line x1="4" y1="30" x2="44" y2="30" stroke="currentColor" stroke-width="1.2" opacity="0.5"></line>
+                  <line x1="17" y1="4" x2="17" y2="44" stroke="currentColor" stroke-width="1.2" opacity="0.5"></line>
+                  <line x1="30" y1="4" x2="30" y2="44" stroke="currentColor" stroke-width="1.2" opacity="0.5"></line>
+                  <rect x="18" y="18" width="12" height="12" fill="currentColor" opacity="0.85"></rect>
+                </svg>
+              </span>
+              <span class="card-title">The Gridlock</span>
+              <span class="card-subtitle">Traffic Clearing Puzzle</span>
+              <span class="card-category">Logic • Puzzle • Strategy</span>
+              <span class="card-desc">Clear the grid. Move the blocks. Find the path. Get the Key Block to the exit.</span>
+              <span class="card-play"><span>Play Now</span><svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            </button>
+
+            <a class="game-card game-card--codebreaker" href="/codebreaker" data-link aria-label="Play Codebreaker — The Numeric Mastermind">
+              <span class="card-corner tl"></span><span class="card-corner br"></span>
+              <span class="card-top"><span class="card-index">02</span><span class="card-status">Ready</span></span>
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <rect x="10" y="20" width="28" height="20" rx="2" stroke="currentColor" stroke-width="1.6"></rect>
+                  <path d="M16 20v-6a8 8 0 0 1 16 0v6" stroke="currentColor" stroke-width="1.6"></path>
+                  <circle cx="24" cy="29" r="2.4" fill="currentColor"></circle>
+                </svg>
+              </span>
+              <span class="card-title">Codebreaker</span>
+              <span class="card-subtitle">The Numeric Mastermind</span>
+              <span class="card-category">Deduction • Numbers • Logic</span>
+              <span class="card-desc">Crack the hidden code using logic, deduction and pattern recognition.</span>
+              <span class="card-play"><span>Play Now →</span><svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            </a>
+
+            <button class="game-card game-card--shapeshift" type="button" aria-label="Play Shape Shift — The Latin Square Grid">
+              <span class="card-corner tl"></span><span class="card-corner br"></span>
+              <span class="card-top"><span class="card-index">03</span><span class="card-status">Ready</span></span>
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <rect x="4" y="4" width="18" height="18" rx="1" stroke="currentColor" stroke-width="1.6"></rect>
+                  <circle cx="35" cy="13" r="9" stroke="currentColor" stroke-width="1.6"></circle>
+                  <path d="M13 26 L22 44 L4 44 Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <span class="card-title">Shape Shift</span>
+              <span class="card-subtitle">The Latin Square Grid</span>
+              <span class="card-category">Patterns • Logic • IQ</span>
+              <span class="card-desc">Place every shape exactly once in each row and column. Can you complete the grid?</span>
+              <span class="card-play"><span>Play Now</span><svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            </button>
+
+            <button class="game-card game-card--pinpoint" type="button" aria-label="Play Pinpoint — The Word Link Engine">
+              <span class="card-corner tl"></span><span class="card-corner br"></span>
+              <span class="card-top"><span class="card-index">04</span><span class="card-status">Ready</span></span>
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="1.4"></circle>
+                  <circle cx="24" cy="24" r="11" stroke="currentColor" stroke-width="1.4"></circle>
+                  <circle cx="24" cy="24" r="3" fill="currentColor"></circle>
+                </svg>
+              </span>
+              <span class="card-title">Pinpoint</span>
+              <span class="card-subtitle">The Word Link Engine</span>
+              <span class="card-category">Words • Deduction • Connection</span>
+              <span class="card-desc">Uncover the clues. Find the hidden connection. Pinpoint the category before your attempts run out.</span>
+              <span class="card-play"><span>Play Now</span><svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="view-register" class="view">
+      <div class="wrap"><div class="panel">
+        <p class="hero-eyebrow"><span class="dot"></span> GAME 02 / CODEBREAKER</p>
+        <h2>PLAYER REGISTRATION</h2>
+        <p class="lede">LOGIC. PATTERN. BREAKTHROUGH. Enter the arena with your mission identity.</p>
+        <form id="registerForm">
+          <div class="field"><label for="fullName">Full Name</label><input id="fullName" name="fullName" autocomplete="name" required placeholder="Enter your full name"></div>
+          <div class="field"><label for="branch">Branch</label><input id="branch" name="branch" required placeholder="Enter your branch"></div>
+          <div class="field"><label for="section">Section</label><input id="section" name="section" required placeholder="Enter your section"></div>
+          <div class="field"><label for="year">Year</label><input id="year" name="year" required placeholder="Enter your year"></div>
+          <p class="form-error" id="registerError" role="alert"></p>
+          <button class="btn-primary" type="submit">Continue →</button>
+        </form>
+      </div></div>
+    </section>
+
+    <section id="view-brief" class="view">
+      <div class="wrap"><div class="panel">
+        <h2>WELCOME TO CODEBREAKER</h2>
+        <p class="lede">YOUR MISSION: Crack today's hidden numeric code.</p>
+        <ul class="howto">
+          <li>Enter a valid numeric guess.</li>
+          <li><strong>GREEN</strong> means correct digit + correct position. <span class="sr-only">Also marked Exact.</span></li>
+          <li><span style="color:var(--fb-yellow)">YELLOW</span> means correct digit + wrong position. Also marked Present.</li>
+          <li>GRAY means the digit is not in the code. Also marked Absent.</li>
+          <li>Use logic from previous attempts.</li>
+          <li id="briefAttempts">You have CODE LENGTH + 1 attempts.</li>
+          <li>Find the exact code before your attempts run out.</li>
+        </ul>
+        <p class="lede">Score = (code length × 100) + (remaining attempts × 50) + max(0, 300 − seconds).</p>
+        <button class="btn-primary" id="letsGo" type="button">LET'S GO →</button>
+      </div></div>
+    </section>
+
+    <section id="view-play" class="view">
+      <div class="wrap"><div class="panel">
+        <p class="hero-eyebrow"><span class="dot"></span> MICROSOFT CAMPUS CLUB / CODEBREAKER</p>
+        <div class="stat-row">
+          <div class="stat"><b id="statDay">DAY —</b><span>CHALLENGE DAY</span></div>
+          <div class="stat"><b id="statLen">—-DIGIT CODE</b><span>DAILY LENGTH</span></div>
+          <div class="stat"><b id="statAttempts">0 / 0</b><span>ATTEMPTS</span></div>
+        </div>
+        <div class="fb-legend">
+          <span>● Exact / Green</span>
+          <span>● Present / Yellow</span>
+          <span>● Absent / Gray</span>
+        </div>
+        <div class="digit-row" id="liveSlots" aria-live="polite"></div>
+        <label class="sr-only" for="guessInput">Numeric guess</label>
+        <input id="guessInput" class="sr-only" inputmode="numeric" autocomplete="one-time-code" aria-label="Enter numeric guess">
+        <div class="keypad" id="keypad"></div>
+        <p class="form-error" id="guessError" role="alert"></p>
+        <div class="guess-actions"><button class="btn-primary" id="submitGuess" type="button">ENTER GUESS →</button></div>
+        <div class="history" id="history" aria-live="polite"></div>
+      </div></div>
+    </section>
+
+    <section id="view-result" class="view">
+      <div class="wrap"><div class="panel">
+        <h2 id="resultTitle">MISSION COMPLETE</h2>
+        <p class="lede" id="resultSub"></p>
+        <div class="result-code" id="resultCode"></div>
+        <div class="score-box" id="resultScore"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn-primary" href="/leaderboard" data-link>VIEW LEADERBOARD</a>
+          <a class="btn-join" href="/" data-link>HOME</a>
+        </div>
+      </div></div>
+    </section>
+
+    <section id="view-leaderboard" class="view">
+      <div class="wrap"><div class="panel board-wide">
+        <h2>LEADERBOARD</h2>
+        <p class="lede" id="activeCountLine">Competition rankings persist across devices.</p>
+        <div class="tabs">
+          <button type="button" data-range="today" class="active">TODAY</button>
+          <button type="button" data-range="week">THIS WEEK</button>
+          <button type="button" data-range="all">ALL TIME</button>
+        </div>
+        <div class="table-wrap">
+          <table class="lb">
+            <thead><tr><th>RANK</th><th>PLAYER</th><th>BRANCH</th><th>DAY</th><th>SCORE</th><th>ATTEMPTS</th><th>STATUS</th></tr></thead>
+            <tbody id="lbBody"></tbody>
+          </table>
+        </div>
+        <div class="cards-mobile" id="lbCards"></div>
+      </div></div>
+    </section>
+
+    <section id="view-admin" class="view">
+      <div class="wrap"><div class="panel board-wide" id="adminPanel">
+        <h2>CONTROL CENTER</h2>
+        <form id="adminLogin">
+          <div class="field"><label for="adminPassword">Organizer access</label><input id="adminPassword" type="password" autocomplete="current-password" required></div>
+          <p class="form-error" id="adminError" role="alert"></p>
+          <button class="btn-primary" type="submit">AUTHENTICATE →</button>
+        </form>
+        <div id="adminDash" hidden>
+          <div class="stat-row" id="adminStats"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+            <a class="btn-join" href="/api/admin/export">EXPORT CSV</a>
+            <button class="btn-primary" id="sendReport" type="button">SEND WEEKLY REPORT</button>
+            <button class="btn-join" id="adminLogout" type="button">LOCK</button>
+          </div>
+          <h3>ACTIVE PARTICIPANTS</h3>
+          <div class="table-wrap"><table class="lb"><thead><tr><th>NAME</th><th>BRANCH</th><th>SECTION</th><th>DAY</th><th>STATUS</th></tr></thead><tbody id="activeBody"></tbody></table></div>
+          <h3 style="margin-top:28px">FULL LEADERBOARD</h3>
+          <div class="table-wrap"><table class="lb"><thead><tr><th>PLAYER</th><th>BRANCH</th><th>DAY</th><th>SCORE</th><th>STATUS</th><th>ATTEMPTS</th></tr></thead><tbody id="adminLb"></tbody></table></div>
+        </div>
+      </div></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-line"><span class="tag">&lt;/&gt;</span>&nbsp; BUILT BY CREATORS. FOR INNOVATORS. &nbsp;<span class="tag">&lt;/&gt;</span></p>
+  </footer>
+</div>
+<script src="/js/effects.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

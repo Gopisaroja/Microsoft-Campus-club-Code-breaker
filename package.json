@@ -1,0 +1,18 @@
+{
+  "name": "mcc-codebreaker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Microsoft Campus Club Technical Game Hub — Codebreaker",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test tests/gameLogic.test.js tests/challenge.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "optionalDependencies": {
+    "nodemailer": "^7.0.6"
+  }
+}
