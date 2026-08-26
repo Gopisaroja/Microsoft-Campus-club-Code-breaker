@@ -1,111 +1,80 @@
 import { ensureDailyChallenge, getDb } from "../server/db.js";
 import { mountRoutes } from "../server/routes.js";
 
-getDb();
-ensureDailyChallenge();
-
 const handlers = [];
 
 const app = {};
 
 app.get = (route, ...fns) => {
-  handlers.push({
-    method: "GET",
-    route,
-    fns
-  });
+  handlers.push({ method: "GET", route, fns });
 };
 
 app.post = (route, ...fns) => {
-  handlers.push({
-    method: "POST",
-    route,
-    fns
-  });
+  handlers.push({ method: "POST", route, fns });
 };
 
 app.use = () => {};
 
-mountRoutes(app);
+let startupError = null;
+
+try {
+  getDb();
+  ensureDailyChallenge();
+  mountRoutes(app);
+} catch (error) {
+  startupError = error;
+  console.error("STARTUP ERROR:", error);
+}
 
 function parseCookies(header) {
-  const cookies = {};
+  const result = {};
 
   for (const part of String(header || "").split(";")) {
     const index = part.indexOf("=");
 
     if (index === -1) continue;
 
-    const name = part.slice(0, index).trim();
-    const value = part.slice(index + 1).trim();
-
-    cookies[name] = decodeURIComponent(value);
+    result[part.slice(0, index).trim()] =
+      decodeURIComponent(part.slice(index + 1).trim());
   }
 
-  return cookies;
-}
-
-function serializeCookie(name, value, options = {}) {
-  const parts = [
-    `${name}=${encodeURIComponent(value)}`
-  ];
-
-  if (options.maxAge !== undefined) {
-    parts.push(
-      `Max-Age=${Math.floor(options.maxAge / 1000)}`
-    );
-  }
-
-  parts.push(`Path=${options.path || "/"}`);
-
-  if (options.sameSite) {
-    parts.push(`SameSite=${options.sameSite}`);
-  }
-
-  if (options.httpOnly) {
-    parts.push("HttpOnly");
-  }
-
-  if (options.secure) {
-    parts.push("Secure");
-  }
-
-  return parts.join("; ");
+  return result;
 }
 
 function createResponse(res) {
   const cookies = [];
 
-  const response = {
-    headersSent: false,
-
+  return {
     status(code) {
       res.statusCode = code;
-      return response;
+      return this;
     },
 
     setHeader(name, value) {
       res.setHeader(name, value);
-      return response;
+      return this;
     },
 
     cookie(name, value, options = {}) {
-      cookies.push(
-        serializeCookie(name, value, options)
-      );
+      let cookie =
+        `${name}=${encodeURIComponent(value)}; Path=${options.path || "/"}`;
 
-      return response;
+      if (options.httpOnly) cookie += "; HttpOnly";
+      if (options.secure) cookie += "; Secure";
+      if (options.sameSite) {
+        cookie += `; SameSite=${options.sameSite}`;
+      }
+
+      cookies.push(cookie);
+      return this;
     },
 
     clearCookie(name, options = {}) {
       cookies.push(
-        serializeCookie(name, "", {
-          ...options,
-          maxAge: 0
-        })
+        `${name}=; Max-Age=0; Path=${options.path || "/"}`
       );
 
-      return response;
+      return this;
     },
 
     json(data) {
@@ -119,8 +88,6 @@ function createResponse(res) {
       );
 
       res.end(JSON.stringify(data));
-
-      response.headersSent = true;
     },
 
     send(data) {
@@ -129,38 +96,45 @@ function createResponse(res) {
       }
 
       res.end(data);
-
-      response.headersSent = true;
     }
   };
-
-  return response;
 }
 
 async function runMiddleware(fns, req, res) {
   let index = 0;
 
-  async function next() {
+  const next = async () => {
     const fn = fns[index++];
 
     if (!fn) return;
 
     await fn(req, res, next);
-  }
+  };
 
   await next();
 }
 
-function findRoute(method, pathname) {
-  return handlers.find(
-    (handler) =>
-      handler.method === method &&
-      handler.route === pathname
-  );
-}
-
 export default async function handler(req, res) {
   try {
+    if (startupError) {
+      res.statusCode = 500;
+
+      res.setHeader(
+        "Content-Type",
+        "application/json"
+      );
+
+      res.end(
+        JSON.stringify({
+          error: "Backend startup failed",
+          message: startupError.message,
+          stack: startupError.stack
+        })
+      );
+
+      return;
+    }
+
     const url = new URL(
       req.url || "/",
       `https://${req.headers.host || "localhost"}`
@@ -178,9 +152,10 @@ export default async function handler(req, res) {
       req.body = {};
     }
 
-    const route = findRoute(
-      req.method,
-      url.pathname
+    const route = handlers.find(
+      (item) =>
+        item.method === req.method &&
+        item.route === url.pathname
     );
 
     if (!route) {
@@ -188,13 +163,17 @@ export default async function handler(req, res) {
 
       res.setHeader(
         "Content-Type",
-        "application/json; charset=utf-8"
+        "application/json"
       );
 
       res.end(
         JSON.stringify({
-          error: "API route not found",
-          path: url.pathname
+          error: "Route not found",
+          method: req.method,
+          path: url.pathname,
+          routes: handlers.map(
+            (x) => `${x.method} ${x.route}`
+          )
         })
       );
 
@@ -210,26 +189,21 @@ export default async function handler(req, res) {
     );
 
   } catch (error) {
-    console.error(
-      "Vercel API error:",
-      error
+    console.error("API ERROR:", error);
+
+    res.statusCode = 500;
+
+    res.setHeader(
+      "Content-Type",
+      "application/json"
     );
 
-    if (!res.headersSent) {
-      res.statusCode = 500;
-
-      res.setHeader(
-        "Content-Type",
-        "application/json; charset=utf-8"
-      );
-
-      res.end(
-        JSON.stringify({
-          error:
-            error.message ||
-            "Internal server error"
-        })
-      );
-    }
+    res.end(
+      JSON.stringify({
+        error: "API request failed",
+        message: error.message,
+        stack: error.stack
+      })
+    );
   }
 }
