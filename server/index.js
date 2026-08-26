@@ -13,19 +13,11 @@ const handlers = [];
 const app = {};
 
 app.get = (route, ...fns) => {
-  handlers.push({
-    method: "GET",
-    route,
-    fns,
-  });
+  handlers.push({ method: "GET", route, fns });
 };
 
 app.post = (route, ...fns) => {
-  handlers.push({
-    method: "POST",
-    route,
-    fns,
-  });
+  handlers.push({ method: "POST", route, fns });
 };
 
 app.use = () => {};
@@ -50,14 +42,10 @@ function parseCookies(header) {
 }
 
 function serializeCookie(name, value, options = {}) {
-  const parts = [
-    `${name}=${encodeURIComponent(value)}`
-  ];
+  const parts = [`${name}=${encodeURIComponent(value)}`];
 
   if (options.maxAge !== undefined) {
-    parts.push(
-      `Max-Age=${Math.floor(options.maxAge / 1000)}`
-    );
+    parts.push(`Max-Age=${Math.floor(options.maxAge / 1000)}`);
   }
 
   if (options.path) {
@@ -82,15 +70,17 @@ function serializeCookie(name, value, options = {}) {
 function createResponse(res) {
   const cookies = [];
 
-  return {
+  const response = {
+    headersSent: false,
+
     status(code) {
       res.statusCode = code;
-      return this;
+      return response;
     },
 
     setHeader(name, value) {
       res.setHeader(name, value);
-      return this;
+      return response;
     },
 
     cookie(name, value, options = {}) {
@@ -98,26 +88,23 @@ function createResponse(res) {
         serializeCookie(name, value, options)
       );
 
-      return this;
+      return response;
     },
 
     clearCookie(name, options = {}) {
       cookies.push(
         serializeCookie(name, "", {
           ...options,
-          maxAge: 0,
+          maxAge: 0
         })
       );
 
-      return this;
+      return response;
     },
 
     json(data) {
       if (cookies.length) {
-        res.setHeader(
-          "Set-Cookie",
-          cookies
-        );
+        res.setHeader("Set-Cookie", cookies);
       }
 
       res.setHeader(
@@ -126,19 +113,22 @@ function createResponse(res) {
       );
 
       res.end(JSON.stringify(data));
+
+      response.headersSent = true;
     },
 
     send(data) {
       if (cookies.length) {
-        res.setHeader(
-          "Set-Cookie",
-          cookies
-        );
+        res.setHeader("Set-Cookie", cookies);
       }
 
       res.end(data);
-    },
+
+      response.headersSent = true;
+    }
   };
+
+  return response;
 }
 
 async function runMiddleware(fns, req, res) {
@@ -163,36 +153,53 @@ function findRoute(method, pathname) {
   );
 }
 
+function mimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+
+  const types = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon"
+  };
+
+  return types[ext] || "application/octet-stream";
+}
+
 export default async function handler(req, res) {
   try {
-    req.cookies = parseCookies(
-      req.headers.cookie
-    );
-
     const requestUrl = new URL(
-      req.url,
+      req.url || "/",
       `https://${req.headers.host || "localhost"}`
     );
+
+    req.cookies = parseCookies(req.headers.cookie);
 
     req.query = Object.fromEntries(
       requestUrl.searchParams.entries()
     );
 
-    if (
-      req.body === undefined ||
-      req.body === null
-    ) {
+    if (!req.body) {
       req.body = {};
     }
 
-    const route = findRoute(
-      req.method,
-      requestUrl.pathname
-    );
+    const pathname = requestUrl.pathname;
+
+    /*
+     * IMPORTANT:
+     * Vercel rewrite preserves the original
+     * /api/register, /api/me, etc. pathname.
+     */
+
+    const route = findRoute(req.method, pathname);
 
     if (route) {
-      const response =
-        createResponse(res);
+      const response = createResponse(res);
 
       await runMiddleware(
         route.fns,
@@ -204,12 +211,11 @@ export default async function handler(req, res) {
     }
 
     /*
-     * Serve public files when requested
+     * Static files
      */
 
     if (req.method === "GET") {
-      let requestedPath =
-        requestUrl.pathname;
+      let requestedPath = pathname;
 
       if (requestedPath === "/") {
         requestedPath = "/index.html";
@@ -219,53 +225,26 @@ export default async function handler(req, res) {
         .normalize(requestedPath)
         .replace(/^[/\\]+/, "");
 
+      const publicRoot = path.join(ROOT, "public");
+
       const filePath = path.join(
-        ROOT,
-        "public",
+        publicRoot,
         cleanPath
       );
 
       if (
-        filePath.startsWith(
-          path.join(ROOT, "public")
-        ) &&
+        filePath.startsWith(publicRoot) &&
         fs.existsSync(filePath) &&
         fs.statSync(filePath).isFile()
       ) {
-        const extension =
-          path.extname(filePath)
-            .toLowerCase();
-
-        const mime = {
-          ".html":
-            "text/html; charset=utf-8",
-          ".css":
-            "text/css; charset=utf-8",
-          ".js":
-            "text/javascript; charset=utf-8",
-          ".json":
-            "application/json; charset=utf-8",
-          ".png":
-            "image/png",
-          ".jpg":
-            "image/jpeg",
-          ".jpeg":
-            "image/jpeg",
-          ".svg":
-            "image/svg+xml",
-          ".ico":
-            "image/x-icon",
-        };
+        res.statusCode = 200;
 
         res.setHeader(
           "Content-Type",
-          mime[extension] ||
-            "application/octet-stream"
+          mimeType(filePath)
         );
 
-        fs.createReadStream(
-          filePath
-        ).pipe(res);
+        fs.createReadStream(filePath).pipe(res);
 
         return;
       }
@@ -280,15 +259,12 @@ export default async function handler(req, res) {
 
     res.end(
       JSON.stringify({
-        error: "Not found.",
-        path: requestUrl.pathname,
+        error: "Not found",
+        path: pathname
       })
     );
   } catch (error) {
-    console.error(
-      "Vercel function error:",
-      error
-    );
+    console.error("Vercel function error:", error);
 
     if (!res.headersSent) {
       res.statusCode = 500;
@@ -300,9 +276,7 @@ export default async function handler(req, res) {
 
       res.end(
         JSON.stringify({
-          error:
-            error?.message ||
-            "Internal server error.",
+          error: error.message || "Internal server error"
         })
       );
     }
